@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import { TooltipProvider } from '@radix-ui/react-tooltip';
 import { PlateEditor } from '@/components/editor/plate-editor';
 import templatesData from '../../../data/templates.json';
 
@@ -50,12 +51,14 @@ const TemplateDetailPage = () => {
 
   return (
     <div className="h-screen w-full">
-      <PlateEditor
-        initialTemplate={{
-          name: template.name,
-          content: template.content,
-        }}
-      />
+      <TooltipProvider>
+        <PlateEditor
+          initialTemplate={{
+            name: template.name,
+            content: template.content,
+          }}
+        />
+      </TooltipProvider>
     </div>
   );
 };

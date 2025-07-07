@@ -5,12 +5,7 @@ import * as React from 'react';
 import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 
 import { useEditorRef } from '@udecode/plate/react';
-import {
-  FileIcon,
-  ImageIcon,
-  LinkIcon,
-  VideoIcon,
-} from 'lucide-react';
+import { FileIcon, ImageIcon, LinkIcon, VideoIcon } from 'lucide-react';
 
 import {
   DropdownMenu,
@@ -19,8 +14,16 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { ToolbarButton } from './toolbar';
 
-export function MediaToolbarButton(props: DropdownMenuProps) {
+interface MediaToolbarButtonProps extends DropdownMenuProps {
+  nodeType?: string;
+}
+
+export function MediaToolbarButton({
+  nodeType,
+  ...props
+}: MediaToolbarButtonProps) {
   const editor = useEditorRef();
 
   const handleMediaInsert = (type: string) => {
@@ -49,13 +52,9 @@ export function MediaToolbarButton(props: DropdownMenuProps) {
   return (
     <DropdownMenu {...props}>
       <DropdownMenuTrigger asChild>
-        <button
-          type="button"
-          className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-md text-sm font-medium whitespace-nowrap transition-[color,box-shadow] outline-none hover:bg-muted hover:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50 h-8 min-w-8 px-1.5 bg-transparent"
-          title="Insert media"
-        >
+        <ToolbarButton tooltip="Insert media" isDropdown>
           <ImageIcon className="size-4" />
-        </button>
+        </ToolbarButton>
       </DropdownMenuTrigger>
 
       <DropdownMenuContent

@@ -1,9 +1,11 @@
 'use client';
 
 import * as React from 'react';
-import { useEffect, useState } from 'react';
+import { DndProvider } from 'react-dnd';
+import { HTML5Backend } from 'react-dnd-html5-backend';
 import { useRouter } from 'next/navigation';
 
+import { HEADING_KEYS } from '@udecode/plate-heading';
 import { Plate } from '@udecode/plate/react';
 import { useEditorRef, useEditorString } from '@udecode/plate/react';
 import { ArrowLeft, User } from 'lucide-react';
@@ -18,31 +20,17 @@ import { AISidebar } from '@/components/ui/ai-sidebar';
 import { Button } from '@/components/ui/button';
 import { DocumentOutline } from '@/components/ui/document-outline';
 import { Editor, EditorContainer } from '@/components/ui/editor';
-import { FixedToolbar } from '@/components/ui/fixed-toolbar';
-import { FixedToolbarButtons } from '@/components/ui/fixed-toolbar-buttons';
 import { FloatingToolbar } from '@/components/ui/floating-toolbar';
 import { FloatingToolbarButtons } from '@/components/ui/floating-toolbar-buttons';
+import { HeadingElement } from '@/components/ui/heading-element';
 import { MagicWandButton } from '@/components/ui/magic-wand-button';
 import { VersionHistoryButton } from '@/components/ui/version-history-button';
-
-// Import types only
-import type { DndProvider as DndProviderType } from 'react-dnd';
-import type { HTML5Backend as HTML5BackendType } from 'react-dnd-html5-backend';
 
 interface PlateEditorProps {
   initialTemplate?: {
     content: string | null;
     name: string | null;
   } | null;
-}
-
-// Define interface for dynamically loaded components
-interface DndComponentsType {
-  DndProvider: React.ComponentType<{
-    backend: any;
-    children: React.ReactNode;
-  }>;
-  HTML5Backend: any;
 }
 
 function AISidebarComponent() {
@@ -98,27 +86,26 @@ function MagicWandButtonComponent() {
   return <MagicWandButton onClick={openSidebar} />;
 }
 
+// Add this interface for the heading parameter
+interface HeadingItem {
+  id: string;
+  level: number;
+  path: number[];
+  title: string;
+  highlightKey?: number;
+}
+
+// Add this interface for the props parameter
+interface HeadingElementProps {
+  element: {
+    id?: string;
+    [key: string]: any;
+  };
+  [key: string]: any;
+}
+
 export function PlateEditor({ initialTemplate }: PlateEditorProps) {
   const router = useRouter();
-  const [DndComponents, setDndComponents] = useState<DndComponentsType | null>(
-    null,
-  );
-
-  // Dynamically import DnD components on the client side only
-  useEffect(() => {
-    const loadDndComponents = async () => {
-      const [dndModule, backendModule] = await Promise.all([
-        import('react-dnd'),
-        import('react-dnd-html5-backend'),
-      ]);
-
-      setDndComponents({
-        DndProvider: dndModule.DndProvider,
-        HTML5Backend: backendModule.HTML5Backend,
-      });
-    };
-    loadDndComponents();
-  }, []);
 
   // Create initial value based on template to prevent flicker
   const templateValue = React.useMemo(() => {
@@ -141,25 +128,137 @@ export function PlateEditor({ initialTemplate }: PlateEditorProps) {
     return undefined;
   }, [initialTemplate]);
 
+  // Highlight state for headings
+  const [highlightedHeadingId, setHighlightedHeadingId] = React.useState<
+    string | null
+  >(null); // Sidebar
+  const [highlightedEditorHeading, setHighlightedEditorHeading] =
+    React.useState<{ id: string; highlightKey: number } | null>(null); // Editor
+
   const editor = useCreateEditor({
     value: templateValue,
   });
+
+  // Handler for sidebar highlight (immediate)
+  const handleSidebarHighlight = React.useCallback((id: string) => {
+    setHighlightedHeadingId(id);
+  }, []);
+
+  // Handler for editor highlight (after scroll)
+  const handleHighlightHeading = React.useCallback(
+    (heading: HeadingItem) => {
+      setHighlightedEditorHeading({
+        id: heading.id,
+        highlightKey: heading.highlightKey || Date.now(),
+      });
+      if (editor && heading.path) {
+        editor.tf.select(heading.path);
+      }
+      setTimeout(() => setHighlightedEditorHeading(null), 4000);
+    },
+    [editor],
+  );
+
+  // Plate components override to inject highlight (must be after editor is defined)
+  React.useEffect(() => {
+    Object.assign(editor.components ?? {}, {
+      [HEADING_KEYS.h1]: (props: HeadingElementProps) => (
+        <HeadingElement
+          {...props}
+          key={
+            highlightedEditorHeading
+              ? highlightedEditorHeading.highlightKey
+              : undefined
+          }
+          variant="h1"
+          highlighted={
+            highlightedEditorHeading &&
+            props.element.id === highlightedEditorHeading.id
+          }
+        />
+      ),
+      [HEADING_KEYS.h2]: (props: HeadingElementProps) => (
+        <HeadingElement
+          {...props}
+          key={
+            highlightedEditorHeading
+              ? highlightedEditorHeading.highlightKey
+              : undefined
+          }
+          variant="h2"
+          highlighted={
+            highlightedEditorHeading &&
+            props.element.id === highlightedEditorHeading.id
+          }
+        />
+      ),
+      [HEADING_KEYS.h3]: (props: HeadingElementProps) => (
+        <HeadingElement
+          {...props}
+          key={
+            highlightedEditorHeading
+              ? highlightedEditorHeading.highlightKey
+              : undefined
+          }
+          variant="h3"
+          highlighted={
+            highlightedEditorHeading &&
+            props.element.id === highlightedEditorHeading.id
+          }
+        />
+      ),
+      [HEADING_KEYS.h4]: (props: HeadingElementProps) => (
+        <HeadingElement
+          {...props}
+          key={
+            highlightedEditorHeading
+              ? highlightedEditorHeading.highlightKey
+              : undefined
+          }
+          variant="h4"
+          highlighted={
+            highlightedEditorHeading &&
+            props.element.id === highlightedEditorHeading.id
+          }
+        />
+      ),
+      [HEADING_KEYS.h5]: (props: HeadingElementProps) => (
+        <HeadingElement
+          {...props}
+          key={
+            highlightedEditorHeading
+              ? highlightedEditorHeading.highlightKey
+              : undefined
+          }
+          variant="h5"
+          highlighted={
+            highlightedEditorHeading &&
+            props.element.id === highlightedEditorHeading.id
+          }
+        />
+      ),
+      [HEADING_KEYS.h6]: (props: HeadingElementProps) => (
+        <HeadingElement
+          {...props}
+          key={
+            highlightedEditorHeading
+              ? highlightedEditorHeading.highlightKey
+              : undefined
+          }
+          variant="h6"
+          highlighted={
+            highlightedEditorHeading &&
+            props.element.id === highlightedEditorHeading.id
+          }
+        />
+      ),
+    });
+  }, [editor, highlightedEditorHeading]);
 
   const handleBackClick = () => {
     // Use window.location for direct navigation
     window.location.href = '/home/templates';
   };
-
-  // Render a loading state until DnD components are loaded
-  if (!DndComponents) {
-    return (
-      <div className="flex h-screen items-center justify-center">
-        <div>Loading editor...</div>
-      </div>
-    );
-  }
-
-  const { DndProvider, HTML5Backend } = DndComponents;
 
   return (
     <DndProvider backend={HTML5Backend}>
@@ -196,18 +295,16 @@ export function PlateEditor({ initialTemplate }: PlateEditorProps) {
                 </div>
               </div>
 
-              {/* Fixed Toolbar - Positioned to span the full width */}
-              <div className="w-full border-b border-border bg-background z-40 sticky top-[57px]">
-                <FixedToolbar>
-                  <FixedToolbarButtons />
-                </FixedToolbar>
-              </div>
-
               {/* Content Area */}
               <div className="flex flex-1 relative">
                 {/* Left Sidebar */}
                 <div className="w-64 border-r border-border bg-background p-4 overflow-y-auto flex-shrink-0 z-10">
-                  <DocumentOutline editor={editor} />
+                  <DocumentOutline
+                    editor={editor}
+                    onHighlightHeading={handleHighlightHeading}
+                    onSidebarHighlight={handleSidebarHighlight}
+                    highlightedHeadingId={highlightedHeadingId}
+                  />
                 </div>
 
                 {/* Main Content Area */}

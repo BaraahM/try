@@ -1,4 +1,3 @@
-
 'use client';
 
 import { createPlatePlugin } from '@udecode/plate/react';
@@ -11,10 +10,10 @@ export const FixedToolbarPlugin = createPlatePlugin({
   render: {
     beforeEditable: () => (
       <div className="sticky top-0 left-0 right-0 z-40 w-full bg-white border-b border-gray-200">
-      <FixedToolbar>
-        <FixedToolbarButtons />
-      </FixedToolbar>
-    </div>
-  ),
-},
+        <FixedToolbar>
+          <FixedToolbarButtons />
+        </FixedToolbar>
+      </div>
+    ),
+  },
 });

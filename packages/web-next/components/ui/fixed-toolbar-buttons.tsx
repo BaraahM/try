@@ -19,6 +19,7 @@ import { AIToolbarButton } from './ai-toolbar-button';
 import { AlignDropdownMenu } from './align-dropdown-menu';
 import { ColorDropdownMenu } from './color-dropdown-menu';
 import { CommentToolbarButton } from './comment-toolbar-button';
+import { EmojiDropdownMenu } from './emoji-dropdown-menu';
 import { ExportToolbarButton } from './export-toolbar-button';
 import { RedoToolbarButton, UndoToolbarButton } from './history-toolbar-button';
 import { ImportToolbarButton } from './import-toolbar-button';
@@ -57,10 +58,7 @@ export function FixedToolbarButtons() {
             <MarkToolbarButton nodeType="italic" tooltip="Italic (⌘+I)">
               <ItalicIcon />
             </MarkToolbarButton>
-            <MarkToolbarButton
-              nodeType="underline"
-              tooltip="Underline (⌘+U)"
-            >
+            <MarkToolbarButton nodeType="underline" tooltip="Underline (⌘+U)">
               <UnderlineIcon />
             </MarkToolbarButton>
             <MarkToolbarButton
@@ -71,7 +69,7 @@ export function FixedToolbarButtons() {
             </MarkToolbarButton>
             <MarkToolbarButton nodeType="code" tooltip="Code (⌘+E)">
               <Code2Icon />
-              </MarkToolbarButton>
+            </MarkToolbarButton>
             <MarkToolbarButton nodeType="superscript" tooltip="Superscript">
               <SuperscriptIcon />
             </MarkToolbarButton>
@@ -104,9 +102,11 @@ export function FixedToolbarButtons() {
 
             <ToggleToolbarButton />
 
-            <MediaToolbarButton />
+            <MediaToolbarButton nodeType={ImagePlugin.key} />
+            <MediaToolbarButton nodeType={FilePlugin.key} />
 
             <TableDropdownMenu />
+            <EmojiDropdownMenu />
 
             <MoreDropdownMenu />
           </ToolbarGroup>
