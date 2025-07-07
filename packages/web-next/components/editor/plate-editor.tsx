@@ -1,8 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { DndProvider } from 'react-dnd';
-import { HTML5Backend } from 'react-dnd-html5-backend';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 import { Plate } from '@udecode/plate/react';
@@ -19,16 +18,31 @@ import { AISidebar } from '@/components/ui/ai-sidebar';
 import { Button } from '@/components/ui/button';
 import { DocumentOutline } from '@/components/ui/document-outline';
 import { Editor, EditorContainer } from '@/components/ui/editor';
+import { FixedToolbar } from '@/components/ui/fixed-toolbar';
+import { FixedToolbarButtons } from '@/components/ui/fixed-toolbar-buttons';
 import { FloatingToolbar } from '@/components/ui/floating-toolbar';
 import { FloatingToolbarButtons } from '@/components/ui/floating-toolbar-buttons';
 import { MagicWandButton } from '@/components/ui/magic-wand-button';
 import { VersionHistoryButton } from '@/components/ui/version-history-button';
+
+// Import types only
+import type { DndProvider as DndProviderType } from 'react-dnd';
+import type { HTML5Backend as HTML5BackendType } from 'react-dnd-html5-backend';
 
 interface PlateEditorProps {
   initialTemplate?: {
     content: string | null;
     name: string | null;
   } | null;
+}
+
+// Define interface for dynamically loaded components
+interface DndComponentsType {
+  DndProvider: React.ComponentType<{
+    backend: any;
+    children: React.ReactNode;
+  }>;
+  HTML5Backend: any;
 }
 
 function AISidebarComponent() {
@@ -86,6 +100,25 @@ function MagicWandButtonComponent() {
 
 export function PlateEditor({ initialTemplate }: PlateEditorProps) {
   const router = useRouter();
+  const [DndComponents, setDndComponents] = useState<DndComponentsType | null>(
+    null,
+  );
+
+  // Dynamically import DnD components on the client side only
+  useEffect(() => {
+    const loadDndComponents = async () => {
+      const [dndModule, backendModule] = await Promise.all([
+        import('react-dnd'),
+        import('react-dnd-html5-backend'),
+      ]);
+
+      setDndComponents({
+        DndProvider: dndModule.DndProvider,
+        HTML5Backend: backendModule.HTML5Backend,
+      });
+    };
+    loadDndComponents();
+  }, []);
 
   // Create initial value based on template to prevent flicker
   const templateValue = React.useMemo(() => {
@@ -116,6 +149,17 @@ export function PlateEditor({ initialTemplate }: PlateEditorProps) {
     // Use window.location for direct navigation
     window.location.href = '/home/templates';
   };
+
+  // Render a loading state until DnD components are loaded
+  if (!DndComponents) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <div>Loading editor...</div>
+      </div>
+    );
+  }
+
+  const { DndProvider, HTML5Backend } = DndComponents;
 
   return (
     <DndProvider backend={HTML5Backend}>
@@ -150,6 +194,13 @@ export function PlateEditor({ initialTemplate }: PlateEditorProps) {
                     <User className="h-4 w-4" />
                   </Button>
                 </div>
+              </div>
+
+              {/* Fixed Toolbar - Positioned to span the full width */}
+              <div className="w-full border-b border-border bg-background z-40 sticky top-[57px]">
+                <FixedToolbar>
+                  <FixedToolbarButtons />
+                </FixedToolbar>
               </div>
 
               {/* Content Area */}

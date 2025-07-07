@@ -4,6 +4,7 @@ import * as React from 'react';
 import { Suspense } from 'react';
 import { Toaster } from 'sonner';
 import { ClientOnly } from '../ClientOnly';
+import { TooltipProvider } from '@radix-ui/react-tooltip';
 
 import { PlateEditor } from './plate-editor';
 import { SettingsProvider } from './settings';
@@ -18,9 +19,11 @@ interface PlateEditorWrapperProps {
 function EditorContent({ initialTemplate }: PlateEditorWrapperProps) {
   return (
     <div className="h-screen w-full">
-      <SettingsProvider>
-        <PlateEditor initialTemplate={initialTemplate} />
-      </SettingsProvider>
+      <TooltipProvider>
+        <SettingsProvider>
+          <PlateEditor initialTemplate={initialTemplate} />
+        </SettingsProvider>
+      </TooltipProvider>
       <Toaster />
     </div>
   );
